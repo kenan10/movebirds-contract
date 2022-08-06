@@ -17,7 +17,7 @@ error Movebirds__InvalidSigner();
 error Movebirds__WaitlistMintStopped();
 error Movebirds__StageNotStartedYet(uint256 stage);
 
-contract PeepeeSoss is ERC721A, ERC2981, Ownable, ReentrancyGuard {
+contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     enum SaleStage {
@@ -51,7 +51,7 @@ contract PeepeeSoss is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     }
 
     constructor(string memory defaultBaseUri, address royaltyReciver)
-        ERC721A('PeepeeSoss', 'PS')
+        ERC721A('Movebirds', 'MB')
     {
         _setDefaultRoyalty(royaltyReciver, 500);
         s_baseTokenUri = defaultBaseUri;
