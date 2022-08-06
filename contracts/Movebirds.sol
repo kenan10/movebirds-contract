@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
 import 'erc721a/contracts/ERC721A.sol';
@@ -21,11 +21,11 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     enum SaleStage {
-        Stop,
-        Allowlist,
-        Waitlist,
-        Public,
-        SoldOut
+        Stop,       // 0
+        Allowlist,  // 1
+        Waitlist,   // 2   
+        Public,     // 3
+        SoldOut     // 4
     }
 
     uint256 public maxSupply = 10;
