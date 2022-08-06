@@ -1,0 +1,55 @@
+require('dotenv').config()
+require('@nomiclabs/hardhat-etherscan')
+require('@nomicfoundation/hardhat-chai-matchers')
+require('hardhat-gas-reporter')
+require('solidity-coverage')
+require('hardhat-deploy')
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY
+const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
+const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
+
+module.exports = {
+    solidity: '0.8.9',
+    defaultNetwork: 'hardhat',
+    networks: {
+        hardhat: {
+            chainId: 31337,
+            gasPrice: 33000000000
+        },
+        rinkeby: {
+            chainId: 4,
+            url: RINKEBY_RPC_URL,
+            blockConfirmation: 6,
+            accounts: [PRIVATE_KEY]
+        },
+        goerli: {
+            chainId: 5,
+            url: 'https://eth-goerli.g.alchemy.com/v2/y8uHg_12_Esag7RzN8lU3C81F44DuK_l',
+            blockConfirmation: 6,
+            accounts: [PRIVATE_KEY]
+        }
+    },
+    etherscan: {
+        apiKey: ETHERSCAN_API_KEY
+    },
+    gasReporter: {
+        enabled: true,
+        currency: 'USD',
+        outputFile: 'gas-reporter.txt',
+        noColors: true,
+        coinmarketcap: COINMARKETCAP_API_KEY
+    },
+    namedAccounts: {
+        deployer: {
+            default: 0
+        }
+    },
+    settings: {
+        optimizer: {
+            enabled: true,
+            runs: 1000
+        }
+    }
+}

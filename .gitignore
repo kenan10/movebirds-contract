@@ -1,0 +1,10 @@
+.yarn.lock
+/node_modules
+/cache
+/artifacts
+gas-reporter.txt
+yarn.lock
+coverage.json
+/coverage
+.env
+doc.md
