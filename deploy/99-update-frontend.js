@@ -38,3 +38,5 @@ async function updateAbi() {
         movebirds.interface.format(ethers.utils.FormatTypes.json)
     )
 }
+
+module.exports.tags = ['all']

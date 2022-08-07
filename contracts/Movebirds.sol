@@ -21,11 +21,11 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     enum SaleStage {
-        Stop,       // 0
-        Allowlist,  // 1
-        Waitlist,   // 2   
-        Public,     // 3
-        SoldOut     // 4
+        Stop, // 0
+        Allowlist, // 1
+        Waitlist, // 2
+        Public, // 3
+        SoldOut // 4
     }
 
     uint256 public maxSupply = 10;
@@ -38,6 +38,8 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     string private s_baseTokenUri;
 
     mapping(address => uint256) private s_tokensClaimed;
+
+    event ChangeSalesStage(uint8 salesSatgeCode);
 
     modifier mintCompliance(uint256 quantity) {
         if (totalSupply() + quantity > maxSupply) {
@@ -129,6 +131,7 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function setSaleStage(uint256 newStage) external onlyOwner {
+        emit ChangeSalesStage(uint8(newStage));
         s_saleStage = SaleStage(newStage);
     }
 
