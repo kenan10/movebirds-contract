@@ -130,6 +130,13 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, quantity);
     }
 
+    function withdrawTo(address to) external onlyOwner {
+        (bool success, ) = to.call{value: address(this).balance}('');
+        if (!success) {
+            revert Movebirds__TransferFailed();
+        }
+    }
+
     function _verify(
         address signer,
         bytes32 _hash,
