@@ -1,4 +1,4 @@
-const { developmentChains } = require('../helper-hardhat.config')
+const { developmentChains, networkConfig } = require('../helper-hardhat.config')
 const { verify } = require('../utils/verify')
 const { network } = require('hardhat')
 require('dotenv').config()
@@ -9,13 +9,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const DEFAULT_BASE_URI = process.env.DEFAULT_BASE_URI
 
     const args = [DEFAULT_BASE_URI, deployer]
-    console.log(network.config.blockConfirmations)
 
     const movebirds = await deploy('Movebirds', {
         from: deployer,
         args: args,
         log: true,
-        waitConfirmations: network.config.blockConfirmations || 1
+        waitConfirmations:
+            networkConfig[network.config.chainId].blockConfirmation || 1
     })
 
     if (!developmentChains.includes(network.name)) {

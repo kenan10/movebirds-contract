@@ -15,6 +15,7 @@ error Movebirds__PublicMintStopped();
 error Movebirds__AllowlistMintStopped();
 error Movebirds__InvalidSigner();
 error Movebirds__WaitlistMintStopped();
+error Movebirds__IncorrectValue();
 error Movebirds__StageNotStartedYet(uint256 stage);
 
 contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
@@ -29,24 +30,29 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     }
 
     uint256 public maxSupply = 10;
-    uint256 public maxPerAddress = 1;
+    uint256 public maxPerAddress = 2;
+    uint256 public tokenPrice = 0.005 ether;
 
     address private signerAddressAllowlist;
     address private signerAddressWaitlist;
 
-    SaleStage public s_saleStage = SaleStage.Stop;
-    string private s_baseTokenUri;
+    SaleStage public saleStage = SaleStage.Stop;
+    string private baseTokenUri;
 
-    mapping(address => uint256) private s_tokensClaimed;
-
-    event ChangeSalesStage(uint8 salesSatgeCode);
+    mapping(address => uint256) private tokensClaimed;
 
     modifier mintCompliance(uint256 quantity) {
         if (totalSupply() + quantity > maxSupply) {
             revert Movebirds__SoldOut();
         }
-        if (s_tokensClaimed[msg.sender] + quantity > maxPerAddress) {
+        if (tokensClaimed[msg.sender] + quantity > maxPerAddress) {
             revert Movebirds__OutOfMaxPerWallet();
+        }
+        if (
+            (quantity > 1 || tokensClaimed[msg.sender] > 0) &&
+            (quantity * tokenPrice != msg.value)
+        ) {
+            revert Movebirds__IncorrectValue();
         }
 
         _;
@@ -56,11 +62,11 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         ERC721A('Movebirds', 'MB')
     {
         _setDefaultRoyalty(royaltyReciver, 500);
-        s_baseTokenUri = defaultBaseUri;
+        baseTokenUri = defaultBaseUri;
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return s_baseTokenUri;
+        return baseTokenUri;
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -73,9 +79,13 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         return super.supportsInterface(interfaceId);
     }
 
-    function mintPublic(uint256 quantity) external mintCompliance(quantity) {
-        if (SaleStage.Public != s_saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(s_saleStage));
+    function mintPublic(uint256 quantity)
+        external
+        payable
+        mintCompliance(quantity)
+    {
+        if (SaleStage.Public != saleStage) {
+            revert Movebirds__StageNotStartedYet(uint256(saleStage));
         }
         internalMint(quantity);
     }
@@ -84,9 +94,9 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         uint256 quantity,
         bytes32 _hash,
         bytes memory signature
-    ) external mintCompliance(quantity) {
-        if (SaleStage.Allowlist != s_saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(s_saleStage));
+    ) external payable mintCompliance(quantity) {
+        if (SaleStage.Allowlist != saleStage) {
+            revert Movebirds__StageNotStartedYet(uint256(saleStage));
         }
         if (!_verify(signerAddressAllowlist, _hash, signature)) {
             revert Movebirds__InvalidSigner();
@@ -98,9 +108,9 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         uint256 quantity,
         bytes32 _hash,
         bytes memory signature
-    ) external mintCompliance(quantity) {
-        if (SaleStage.Waitlist != s_saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(s_saleStage));
+    ) external payable mintCompliance(quantity) {
+        if (SaleStage.Waitlist != saleStage) {
+            revert Movebirds__StageNotStartedYet(uint256(saleStage));
         }
         if (!_verify(signerAddressWaitlist, _hash, signature)) {
             revert Movebirds__InvalidSigner();
@@ -115,8 +125,8 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, quantity);
     }
 
-    function internalMint(uint256 quantity) internal {
-        s_tokensClaimed[msg.sender] += quantity;
+    function internalMint(uint256 quantity) internal nonReentrant {
+        tokensClaimed[msg.sender] += quantity;
         _safeMint(msg.sender, quantity);
     }
 
@@ -131,8 +141,7 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function setSaleStage(uint256 newStage) external onlyOwner {
-        emit ChangeSalesStage(uint8(newStage));
-        s_saleStage = SaleStage(newStage);
+        saleStage = SaleStage(newStage);
     }
 
     function setMaxPerAddress(uint256 newMax) external onlyOwner {
@@ -148,7 +157,7 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function getTokensCaimed(address claimer) external view returns (uint256) {
-        return s_tokensClaimed[claimer];
+        return tokensClaimed[claimer];
     }
 
     function setDefaultRoyalty(address receiver, uint96 feeNumerator)
@@ -156,5 +165,9 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         onlyOwner
     {
         _setDefaultRoyalty(receiver, feeNumerator);
+    }
+
+    function setPrice(uint256 newPrice) external onlyOwner {
+        tokenPrice = newPrice;
     }
 }

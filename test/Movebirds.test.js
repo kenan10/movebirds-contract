@@ -61,6 +61,23 @@ require('dotenv').config()
                   })
               })
 
+              it('incrorect amount eth sent', async () => {
+                  await movebirds.setSaleStage(3)
+                  const price = await movebirds.tokenPrice()
+                  const toMintMany = await movebirds.maxPerAddress()
+                  const value = price * toMintMany
+
+                  expect(
+                      await movebirds.mintPublic(1, { value: value.toString() })
+                  ).to.be.ok
+                  await expect(
+                      movebirds.mintPublic(1)
+                  ).to.be.revertedWithCustomError(
+                      movebirds,
+                      'Movebirds__IncorrectValue'
+                  )
+              })
+
               it('max per wallet', async () => {
                   await movebirds.setSaleStage(3)
                   const maxPerWallet = await movebirds.maxPerAddress()
@@ -203,17 +220,58 @@ require('dotenv').config()
                       'Movebirds__InvalidSigner'
                   )
               })
+
+              it('incrorect amount eth sent', async () => {
+                  await movebirds.setSaleStage(1)
+                  const price = await movebirds.tokenPrice()
+                  const toMintMany = await movebirds.maxPerAddress()
+                  const value = price * toMintMany
+
+                  const allowlister = whitelistAccounts[0]
+                  const connected = await movebirds.connect(allowlister)
+                  const hash = hashes[0]
+                  const signature = signatures[0]
+
+                  await expect(
+                      await connected.mintAllowlist(
+                          toMintMany,
+                          hash,
+                          signature,
+                          {
+                              value: value.toString()
+                          }
+                      )
+                  ).to.be.ok
+
+                  await expect(
+                      movebirds.mintAllowlist(toMintMany, hash, signature)
+                  ).to.be.revertedWithCustomError(
+                      movebirds,
+                      'Movebirds__IncorrectValue'
+                  )
+              })
           })
 
           describe('set sale stage', () => {
               it('public mint', async () => {
                   await movebirds.setSaleStage(3)
-                  assert.equal(await movebirds.s_saleStage(), 3)
+                  assert.equal(await movebirds.saleStage(), 3)
               })
 
               it('allowlist mint', async () => {
                   await movebirds.setSaleStage(1)
-                  assert.equal(await movebirds.s_saleStage(), 1)
+                  assert.equal(await movebirds.saleStage(), 1)
+              })
+          })
+
+          describe('set price', () => {
+              it('correct', async () => {
+                  const newPrice = ethers.utils.parseEther('0.002')
+                  await movebirds.setPrice(newPrice)
+                  assert.equal(
+                      (await movebirds.tokenPrice()).toString(),
+                      newPrice.toString()
+                  )
               })
           })
       })
