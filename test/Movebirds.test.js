@@ -140,7 +140,6 @@ require('dotenv').config()
                           await expect(
                               connected.mintAllowlist(
                                   mintNumber,
-                                  hash,
                                   signature
                               )
                           ).to.be.revertedWithCustomError(
@@ -150,7 +149,6 @@ require('dotenv').config()
                       } else {
                           await connected.mintAllowlist(
                               mintNumber,
-                              hash,
                               signature
                           )
                       }
@@ -168,7 +166,6 @@ require('dotenv').config()
                   await expect(
                       connected.mintAllowlist(
                           parseInt(maxPerWallet) + 1,
-                          hash,
                           signature
                       )
                   ).to.be.revertedWithCustomError(
@@ -192,7 +189,6 @@ require('dotenv').config()
                   expect(
                       await connected.mintAllowlist(
                           1,
-                          addressHashCorrect,
                           signatureCorrect
                       )
                   ).to.be.ok
@@ -212,7 +208,6 @@ require('dotenv').config()
                   expect(
                       await movebirds.mintAllowlist(
                           1,
-                          addressHashCorrect,
                           signatureCorrect
                       )
                   ).to.be.revertedWithCustomError(
@@ -235,7 +230,6 @@ require('dotenv').config()
                   await expect(
                       await connected.mintAllowlist(
                           toMintMany,
-                          hash,
                           signature,
                           {
                               value: value.toString()
