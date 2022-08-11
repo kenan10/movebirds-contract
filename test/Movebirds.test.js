@@ -6,8 +6,8 @@ require('dotenv').config()
 
 !developmentChains.includes(network.name)
     ? describe.skip
-    : describe('Movebirds', () => {
-          let movebirds
+    : describe('Hootis', () => {
+          let hootis
           let deployer
           let minter
           let whitelistAccounts
@@ -31,29 +31,29 @@ require('dotenv').config()
               ]
 
               await deployments.fixture(['all'])
-              movebirds = await ethers.getContract('Movebirds', deployer)
-              movebirds.connect(deployer)
+              hootis = await ethers.getContract('Hootis', deployer)
+              hootis.connect(deployer)
           })
 
           describe('public mint', () => {
               it('max supply', async () => {
-                  await movebirds.setSaleStage(3)
-                  const max_supply = await movebirds.maxSupply()
+                  await hootis.setSaleStage(3)
+                  const max_supply = await hootis.maxSupply()
                   const mintNumber = 1
                   const signers = await ethers.getSigners()
 
                   signers.forEach(async (signer) => {
-                      const connected = await movebirds.connect(signer)
+                      const connected = await hootis.connect(signer)
                       const totalSupply = parseInt(
-                          await movebirds.totalSupply()
+                          await hootis.totalSupply()
                       )
 
                       if (totalSupply + mintNumber > max_supply) {
                           await expect(
                               connected.mintPublic(mintNumber)
                           ).to.be.revertedWithCustomError(
-                              movebirds,
-                              'Movebirds__SoldOut'
+                              hootis,
+                              'Hootis__SoldOut'
                           )
                       } else {
                           await connected.mintPublic(mintNumber)
@@ -62,40 +62,40 @@ require('dotenv').config()
               })
 
               it('incrorect amount eth sent', async () => {
-                  await movebirds.setSaleStage(3)
-                  const price = await movebirds.tokenPrice()
-                  const toMintMany = await movebirds.maxPerAddress()
+                  await hootis.setSaleStage(3)
+                  const price = await hootis.tokenPrice()
+                  const toMintMany = await hootis.maxPerAddress()
                   const value = price * toMintMany
 
                   expect(
-                      await movebirds.mintPublic(1, { value: value.toString() })
+                      await hootis.mintPublic(1, { value: value.toString() })
                   ).to.be.ok
                   await expect(
-                      movebirds.mintPublic(1)
+                      hootis.mintPublic(1)
                   ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__IncorrectValue'
+                      hootis,
+                      'Hootis__IncorrectValue'
                   )
               })
 
               it('max per wallet', async () => {
-                  await movebirds.setSaleStage(3)
-                  const maxPerWallet = await movebirds.maxPerAddress()
+                  await hootis.setSaleStage(3)
+                  const maxPerWallet = await hootis.maxPerAddress()
 
                   await expect(
-                      movebirds.mintPublic(parseInt(maxPerWallet) + 1)
+                      hootis.mintPublic(parseInt(maxPerWallet) + 1)
                   ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__OutOfMaxPerWallet'
+                      hootis,
+                      'Hootis__OutOfMaxPerWallet'
                   )
               })
 
               it('can`t mint in incorrect stage', async () => {
                   await expect(
-                      movebirds.mintPublic(1)
+                      hootis.mintPublic(1)
                   ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__StageNotStartedYet'
+                      hootis,
+                      'Hootis__StageNotStartedYet'
                   )
               })
           })
@@ -106,7 +106,7 @@ require('dotenv').config()
               const signerPK = process.env.DEPLOYER_ADDRESS
 
               beforeEach(async () => {
-                  await movebirds.setAllowlistSigner(signerPK)
+                  await hootis.setAllowlistSigner(signerPK)
                   whitelistAccounts.forEach(async (account) => {
                       const addressHash = ethers.utils.solidityKeccak256(
                           ['address'],
@@ -123,23 +123,23 @@ require('dotenv').config()
               })
 
                 it('max supply', async () => {
-                    await movebirds.setSaleStage(1)
-                    const max_supply = await movebirds.maxSupply()
+                    await hootis.setSaleStage(1)
+                    const max_supply = await hootis.maxSupply()
                     const mintNumber = 1
                     for (let i = 0; i < whitelistAccounts.length; i++) {
                         const allowlister = whitelistAccounts[i]
-                        const connected = await movebirds.connect(allowlister)
+                        const connected = await hootis.connect(allowlister)
                         const signature = signatures[i]
                         const totalSupply = parseInt(
-                            await movebirds.totalSupply()
+                            await hootis.totalSupply()
                         )
 
                         if (totalSupply + mintNumber > max_supply) {
                             await expect(
                                 connected.mintAllowlist(mintNumber, signature)
                             ).to.be.revertedWithCustomError(
-                                movebirds,
-                                'Movebirds__SoldOut'
+                                hootis,
+                                'Hootis__SoldOut'
                             )
                         } else {
                             await connected.mintAllowlist(mintNumber, signature)
@@ -148,10 +148,10 @@ require('dotenv').config()
                 })
 
                 it('max per wallet', async () => {
-                    await movebirds.setSaleStage(1)
-                    const maxPerWallet = await movebirds.maxPerAddress()
+                    await hootis.setSaleStage(1)
+                    const maxPerWallet = await hootis.maxPerAddress()
                     const allowlister = whitelistAccounts[0]
-                    const connected = await movebirds.connect(allowlister)
+                    const connected = await hootis.connect(allowlister)
                     const signature = signatures[0]
 
                     await expect(
@@ -160,14 +160,14 @@ require('dotenv').config()
                             signature
                         )
                     ).to.be.revertedWithCustomError(
-                        movebirds,
-                        'Movebirds__OutOfMaxPerWallet'
+                        hootis,
+                        'Hootis__OutOfMaxPerWallet'
                     )
                 })
 
               it('valid signer', async () => {
-                  await movebirds.setSaleStage(1)
-                  const connected = await movebirds.connect(minter)
+                  await hootis.setSaleStage(1)
+                  const connected = await hootis.connect(minter)
                   const addressHashCorrect = ethers.utils.solidityKeccak256(
                       ['address'],
                       [minter.address]
@@ -185,7 +185,7 @@ require('dotenv').config()
               })
 
               it('invalid signer', async () => {
-                  await movebirds.setSaleStage(1)
+                  await hootis.setSaleStage(1)
                   const addressHashCorrect = ethers.utils.solidityKeccak256(
                       ['address'],
                       [minter.address]
@@ -199,21 +199,21 @@ require('dotenv').config()
                   )
 
                   await expect(
-                      movebirds.mintAllowlist(1, signatureCorrect)
+                      hootis.mintAllowlist(1, signatureCorrect)
                   ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__InvalidSigner'
+                      hootis,
+                      'Hootis__InvalidSigner'
                   )
               })
 
               it('incrorect amount eth sent', async () => {
-                  await movebirds.setSaleStage(1)
-                  const price = await movebirds.tokenPrice()
-                  const toMintMany = await movebirds.maxPerAddress()
+                  await hootis.setSaleStage(1)
+                  const price = await hootis.tokenPrice()
+                  const toMintMany = await hootis.maxPerAddress()
                   const value = price * toMintMany
 
                   const allowlister = whitelistAccounts[0]
-                  const connected = await movebirds.connect(allowlister)
+                  const connected = await hootis.connect(allowlister)
                   const signature = signatures[0]
 
                   expect(
@@ -223,32 +223,32 @@ require('dotenv').config()
                   ).to.be.ok
 
                   await expect(
-                      movebirds.mintAllowlist(toMintMany, signature)
+                      hootis.mintAllowlist(toMintMany, signature)
                   ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__IncorrectValue'
+                      hootis,
+                      'Hootis__IncorrectValue'
                   )
               })
           })
 
           describe('set sale stage', () => {
               it('public mint', async () => {
-                  await movebirds.setSaleStage(3)
-                  assert.equal(await movebirds.saleStage(), 3)
+                  await hootis.setSaleStage(3)
+                  assert.equal(await hootis.saleStage(), 3)
               })
 
               it('allowlist mint', async () => {
-                  await movebirds.setSaleStage(1)
-                  assert.equal(await movebirds.saleStage(), 1)
+                  await hootis.setSaleStage(1)
+                  assert.equal(await hootis.saleStage(), 1)
               })
           })
 
           describe('set price', () => {
               it('correct', async () => {
                   const newPrice = ethers.utils.parseEther('0.002')
-                  await movebirds.setPrice(newPrice)
+                  await hootis.setPrice(newPrice)
                   assert.equal(
-                      (await movebirds.tokenPrice()).toString(),
+                      (await hootis.tokenPrice()).toString(),
                       newPrice.toString()
                   )
               })

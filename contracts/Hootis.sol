@@ -6,17 +6,17 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 
-error Movebirds__TransferFailed();
-error Movebirds__SoldOut();
-error Movebirds__OutOfMaxPerWallet();
-error Movebirds__PublicMintStopped();
-error Movebirds__AllowlistMintStopped();
-error Movebirds__InvalidSigner();
-error Movebirds__WaitlistMintStopped();
-error Movebirds__IncorrectValue();
-error Movebirds__StageNotStartedYet(uint256 stage);
+error Hootis__TransferFailed();
+error Hootis__SoldOut();
+error Hootis__OutOfMaxPerWallet();
+error Hootis__PublicMintStopped();
+error Hootis__AllowlistMintStopped();
+error Hootis__InvalidSigner();
+error Hootis__WaitlistMintStopped();
+error Hootis__IncorrectValue();
+error Hootis__StageNotStartedYet(uint256 stage);
 
-contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
+contract Hootis is ERC721A, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     enum SaleStage {
@@ -39,23 +39,23 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
 
     modifier mintCompliance(uint256 quantity) {
         if (totalSupply() + quantity > maxSupply) {
-            revert Movebirds__SoldOut();
+            revert Hootis__SoldOut();
         }
         if (numberMinted(msg.sender) + quantity > maxPerAddress) {
-            revert Movebirds__OutOfMaxPerWallet();
+            revert Hootis__OutOfMaxPerWallet();
         }
         if (
             (quantity > 1 || numberMinted(msg.sender) > 0) &&
             (quantity * tokenPrice != msg.value)
         ) {
-            revert Movebirds__IncorrectValue();
+            revert Hootis__IncorrectValue();
         }
 
         _;
     }
 
     constructor(string memory defaultBaseUri)
-        ERC721A('Movebirds', 'MB')
+        ERC721A('Hootis', 'HOOTIS')
     {
         baseTokenUri = defaultBaseUri;
     }
@@ -84,7 +84,7 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
         mintCompliance(quantity)
     {
         if (SaleStage.Public != saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(saleStage));
+            revert Hootis__StageNotStartedYet(uint256(saleStage));
         }
         internalMint(quantity);
     }
@@ -95,7 +95,7 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
         mintCompliance(quantity)
     {
         if (SaleStage.Allowlist != saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(saleStage));
+            revert Hootis__StageNotStartedYet(uint256(saleStage));
         }
         if (
             !_verify(
@@ -104,7 +104,7 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
                 signature
             )
         ) {
-            revert Movebirds__InvalidSigner();
+            revert Hootis__InvalidSigner();
         }
         internalMint(quantity);
     }
@@ -115,7 +115,7 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
         mintCompliance(quantity)
     {
         if (SaleStage.Waitlist != saleStage) {
-            revert Movebirds__StageNotStartedYet(uint256(saleStage));
+            revert Hootis__StageNotStartedYet(uint256(saleStage));
         }
         if (
             !_verify(
@@ -124,14 +124,14 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
                 signature
             )
         ) {
-            revert Movebirds__InvalidSigner();
+            revert Hootis__InvalidSigner();
         }
         internalMint(quantity);
     }
 
     function mintDev(uint256 quantity) external onlyOwner {
         if (maxSupply <= totalSupply() + quantity) {
-            revert Movebirds__SoldOut();
+            revert Hootis__SoldOut();
         }
         _safeMint(msg.sender, quantity);
     }
@@ -143,7 +143,7 @@ contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
     function withdrawTo(address to) external onlyOwner {
         (bool success, ) = to.call{value: address(this).balance}('');
         if (!success) {
-            revert Movebirds__TransferFailed();
+            revert Hootis__TransferFailed();
         }
     }
 

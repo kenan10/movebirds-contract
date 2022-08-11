@@ -10,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     const args = [DEFAULT_BASE_URI]
 
-    const movebirds = await deploy('Movebirds', {
+    const hootis = await deploy('Hootis', {
         from: deployer,
         args: args,
         log: true,
@@ -19,7 +19,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
 
     if (!developmentChains.includes(network.name)) {
-        await verify(movebirds.address, args)
+        await verify(hootis.address, args)
     }
 
     log('----------------------------------------------------')

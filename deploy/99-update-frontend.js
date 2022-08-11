@@ -15,27 +15,27 @@ module.exports = async function () {
 
 async function updateContractAddresses() {
     const deployer = (await getNamedAccounts()).deployer
-    const movebirds = await ethers.getContract('Movebirds', deployer)
+    const hootis = await ethers.getContract('Hootis', deployer)
     const chainId = network.config.chainId
     const currentAddresses = JSON.parse(
         fs.readFileSync(FRONTEND_ADDRESSES_FILE, 'utf-8')
     )
     if (chainId in currentAddresses) {
-        if (!currentAddresses[chainId].includes(movebirds.address)) {
-            currentAddresses[chainId].push(movebirds.address)
+        if (!currentAddresses[chainId].includes(hootis.address)) {
+            currentAddresses[chainId].push(hootis.address)
         }
     } else {
-        currentAddresses[chainId] = [movebirds.address]
+        currentAddresses[chainId] = [hootis.address]
     }
     fs.writeFileSync(FRONTEND_ADDRESSES_FILE, JSON.stringify(currentAddresses))
 }
 
 async function updateAbi() {
     const deployer = (await getNamedAccounts()).deployer
-    const movebirds = await ethers.getContract('Movebirds', deployer)
+    const hootis = await ethers.getContract('Hootis', deployer)
     fs.writeFileSync(
         FRONTEND_ABI_FILE,
-        movebirds.interface.format(ethers.utils.FormatTypes.json)
+        hootis.interface.format(ethers.utils.FormatTypes.json)
     )
 }
 
