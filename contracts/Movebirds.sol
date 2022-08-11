@@ -4,9 +4,7 @@ pragma solidity ^0.8.9;
 import 'erc721a/contracts/ERC721A.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
-import 'hardhat/console.sol';
 
 error Movebirds__TransferFailed();
 error Movebirds__SoldOut();
