@@ -7,6 +7,7 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+import 'hardhat/console.sol';
 
 error Movebirds__TransferFailed();
 error Movebirds__SoldOut();
@@ -155,9 +156,7 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         bytes32 _hash,
         bytes memory signature
     ) internal pure returns (bool) {
-        return
-            ECDSA.recover(ECDSA.toEthSignedMessageHash(_hash), signature) ==
-            signer;
+        return _hash.toEthSignedMessageHash().recover(signature) == signer;
     }
 
     function setSaleStage(uint256 newStage) external onlyOwner {

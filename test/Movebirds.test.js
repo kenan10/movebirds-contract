@@ -15,7 +15,7 @@ require('dotenv').config()
           beforeEach(async () => {
               const signers = await ethers.getSigners()
               deployer = (await getNamedAccounts()).deployer
-              minter = signers[0]
+              minter = signers[12]
               whitelistAccounts = [
                   signers[1],
                   signers[2],
@@ -32,7 +32,7 @@ require('dotenv').config()
 
               await deployments.fixture(['all'])
               movebirds = await ethers.getContract('Movebirds', deployer)
-              movebirds.connect()
+              movebirds.connect(deployer)
           })
 
           describe('public mint', () => {
@@ -102,17 +102,16 @@ require('dotenv').config()
 
           describe('mintAllowlist', () => {
               let signatures = []
-              let hashes = []
               const signerSK = process.env.PRIVATE_KEY
               const signerPK = process.env.DEPLOYER_ADDRESS
 
               beforeEach(async () => {
                   await movebirds.setAllowlistSigner(signerPK)
                   whitelistAccounts.forEach(async (account) => {
-                      const addressHash = ethers.utils.id(account.address)
-                      if (!hashes.includes(addressHash)) {
-                          hashes.push(addressHash)
-                      }
+                      const addressHash = ethers.utils.solidityKeccak256(
+                          ['address'],
+                          [account.address]
+                      )
                       const addressBytes = ethers.utils.arrayify(addressHash)
 
                       const signer = new ethers.Wallet(signerSK)
@@ -123,61 +122,56 @@ require('dotenv').config()
                   })
               })
 
-              it('max supply', async () => {
-                  await movebirds.setSaleStage(1)
-                  const max_supply = await movebirds.maxSupply()
-                  const mintNumber = 1
-                  for (let i = 0; i < whitelistAccounts.length; i++) {
-                      const allowlister = whitelistAccounts[i]
-                      const connected = await movebirds.connect(allowlister)
-                      const hash = hashes[i]
-                      const signature = signatures[i]
-                      const totalSupply = parseInt(
-                          await movebirds.totalSupply()
-                      )
+                it('max supply', async () => {
+                    await movebirds.setSaleStage(1)
+                    const max_supply = await movebirds.maxSupply()
+                    const mintNumber = 1
+                    for (let i = 0; i < whitelistAccounts.length; i++) {
+                        const allowlister = whitelistAccounts[i]
+                        const connected = await movebirds.connect(allowlister)
+                        const signature = signatures[i]
+                        const totalSupply = parseInt(
+                            await movebirds.totalSupply()
+                        )
 
-                      if (totalSupply + mintNumber > max_supply) {
-                          await expect(
-                              connected.mintAllowlist(
-                                  mintNumber,
-                                  signature
-                              )
-                          ).to.be.revertedWithCustomError(
-                              movebirds,
-                              'Movebirds__SoldOut'
-                          )
-                      } else {
-                          await connected.mintAllowlist(
-                              mintNumber,
-                              signature
-                          )
-                      }
-                  }
-              })
+                        if (totalSupply + mintNumber > max_supply) {
+                            await expect(
+                                connected.mintAllowlist(mintNumber, signature)
+                            ).to.be.revertedWithCustomError(
+                                movebirds,
+                                'Movebirds__SoldOut'
+                            )
+                        } else {
+                            await connected.mintAllowlist(mintNumber, signature)
+                        }
+                    }
+                })
 
-              it('max per wallet', async () => {
-                  await movebirds.setSaleStage(1)
-                  const maxPerWallet = await movebirds.maxPerAddress()
-                  const allowlister = whitelistAccounts[0]
-                  const connected = await movebirds.connect(allowlister)
-                  const hash = hashes[0]
-                  const signature = signatures[0]
+                it('max per wallet', async () => {
+                    await movebirds.setSaleStage(1)
+                    const maxPerWallet = await movebirds.maxPerAddress()
+                    const allowlister = whitelistAccounts[0]
+                    const connected = await movebirds.connect(allowlister)
+                    const signature = signatures[0]
 
-                  await expect(
-                      connected.mintAllowlist(
-                          parseInt(maxPerWallet) + 1,
-                          signature
-                      )
-                  ).to.be.revertedWithCustomError(
-                      movebirds,
-                      'Movebirds__OutOfMaxPerWallet'
-                  )
-              })
+                    await expect(
+                        connected.mintAllowlist(
+                            parseInt(maxPerWallet) + 1,
+                            signature
+                        )
+                    ).to.be.revertedWithCustomError(
+                        movebirds,
+                        'Movebirds__OutOfMaxPerWallet'
+                    )
+                })
 
               it('valid signer', async () => {
                   await movebirds.setSaleStage(1)
                   const connected = await movebirds.connect(minter)
-                  const addressHashCorrect = ethers.utils.id(minter.address)
+                  const addressHashCorrect = ethers.utils.solidityKeccak256(
+                      ['address'],
+                      [minter.address]
+                  )
                   const addressBytesCorrect =
                       ethers.utils.arrayify(addressHashCorrect)
 
@@ -186,17 +180,16 @@ require('dotenv').config()
                       addressBytesCorrect
                   )
 
-                  expect(
-                      await connected.mintAllowlist(
-                          1,
-                          signatureCorrect
-                      )
-                  ).to.be.ok
+                  expect(await connected.mintAllowlist(1, signatureCorrect)).to
+                      .be.ok
               })
 
               it('invalid signer', async () => {
                   await movebirds.setSaleStage(1)
-                  const addressHashCorrect = ethers.utils.id(minter.address)
+                  const addressHashCorrect = ethers.utils.solidityKeccak256(
+                      ['address'],
+                      [minter.address]
+                  )
                   const addressBytesCorrect =
                       ethers.utils.arrayify(addressHashCorrect)
 
@@ -205,11 +198,8 @@ require('dotenv').config()
                       addressBytesCorrect
                   )
 
-                  expect(
-                      await movebirds.mintAllowlist(
-                          1,
-                          signatureCorrect
-                      )
+                  await expect(
+                      movebirds.mintAllowlist(1, signatureCorrect)
                   ).to.be.revertedWithCustomError(
                       movebirds,
                       'Movebirds__InvalidSigner'
@@ -224,21 +214,16 @@ require('dotenv').config()
 
                   const allowlister = whitelistAccounts[0]
                   const connected = await movebirds.connect(allowlister)
-                  const hash = hashes[0]
                   const signature = signatures[0]
 
-                  await expect(
-                      await connected.mintAllowlist(
-                          toMintMany,
-                          signature,
-                          {
-                              value: value.toString()
-                          }
-                      )
+                  expect(
+                      await connected.mintAllowlist(toMintMany, signature, {
+                          value: value.toString()
+                      })
                   ).to.be.ok
 
                   await expect(
-                      movebirds.mintAllowlist(toMintMany, hash, signature)
+                      movebirds.mintAllowlist(toMintMany, signature)
                   ).to.be.revertedWithCustomError(
                       movebirds,
                       'Movebirds__IncorrectValue'
