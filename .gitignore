@@ -8,4 +8,4 @@ coverage.json
 /coverage
 .env
 doc.md
-/deployments
+deployments/

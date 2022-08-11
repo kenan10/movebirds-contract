@@ -36,13 +36,11 @@ module.exports = {
         rinkeby: {
             chainId: 4,
             url: RINKEBY_RPC_URL,
-            blockConfirmation: 6,
             accounts: [PRIVATE_KEY]
         },
         goerli: {
             chainId: 5,
             url: 'https://eth-goerli.g.alchemy.com/v2/y8uHg_12_Esag7RzN8lU3C81F44DuK_l',
-            blockConfirmation: 6,
             accounts: [PRIVATE_KEY]
         }
     },

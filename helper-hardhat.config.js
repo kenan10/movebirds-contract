@@ -9,6 +9,10 @@ const networkConfig = {
     5: {
         name: 'goerli',
         blockConfirmation: 6
+    },
+    1: {
+        name: 'mainnet',
+        blockConfirmation: 6
     }
 }
 
