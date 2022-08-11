@@ -2,7 +2,6 @@
 pragma solidity ^0.8.9;
 
 import 'erc721a/contracts/ERC721A.sol';
-import '@openzeppelin/contracts/token/common/ERC2981.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
@@ -19,7 +18,7 @@ error Movebirds__WaitlistMintStopped();
 error Movebirds__IncorrectValue();
 error Movebirds__StageNotStartedYet(uint256 stage);
 
-contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
+contract Movebirds is ERC721A, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
     enum SaleStage {
@@ -57,10 +56,9 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(string memory defaultBaseUri, address royaltyReciver)
+    constructor(string memory defaultBaseUri)
         ERC721A('Movebirds', 'MB')
     {
-        _setDefaultRoyalty(royaltyReciver, 500);
         baseTokenUri = defaultBaseUri;
     }
 
@@ -72,7 +70,7 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
         public
         view
         virtual
-        override(ERC721A, ERC2981)
+        override(ERC721A)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -177,13 +175,6 @@ contract Movebirds is ERC721A, ERC2981, Ownable, ReentrancyGuard {
 
     function numberMinted(address claimer) public view returns (uint256) {
         return _numberMinted(claimer);
-    }
-
-    function setDefaultRoyalty(address receiver, uint96 feeNumerator)
-        external
-        onlyOwner
-    {
-        _setDefaultRoyalty(receiver, feeNumerator);
     }
 
     function setMaxSupply(uint256 newMaxSupply) external onlyOwner {

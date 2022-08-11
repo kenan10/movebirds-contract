@@ -8,7 +8,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer } = await getNamedAccounts()
     const DEFAULT_BASE_URI = process.env.DEFAULT_BASE_URI
 
-    const args = [DEFAULT_BASE_URI, deployer]
+    const args = [DEFAULT_BASE_URI]
 
     const movebirds = await deploy('Movebirds', {
         from: deployer,
