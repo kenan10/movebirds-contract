@@ -6,11 +6,11 @@ require('solidity-coverage')
 require('hardhat-deploy')
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY
-const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL
 const MAINNET_PRIVATE_KEY = process.env.MAINNET_PRIVATE_KEY
+const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL
 
 module.exports = {
     solidity: {
@@ -33,14 +33,9 @@ module.exports = {
             url: MAINNET_RPC_URL,
             accounts: [MAINNET_PRIVATE_KEY]
         },
-        rinkeby: {
-            chainId: 4,
-            url: RINKEBY_RPC_URL,
-            accounts: [PRIVATE_KEY]
-        },
         goerli: {
             chainId: 5,
-            url: 'https://eth-goerli.g.alchemy.com/v2/y8uHg_12_Esag7RzN8lU3C81F44DuK_l',
+            url: GOERLI_RPC_URL,
             accounts: [PRIVATE_KEY]
         }
     },
