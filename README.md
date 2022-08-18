@@ -1,3 +1,6 @@
+# Before deploy
+- put actual collection size in Hootis.sol
+
 # How to deploy to mainnet? 
 1. Crete wallet in Metamask
 2. Send ETH on created wallet
