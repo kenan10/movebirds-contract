@@ -44,9 +44,7 @@ require('dotenv').config()
 
                   signers.forEach(async (signer) => {
                       const connected = await hootis.connect(signer)
-                      const totalSupply = parseInt(
-                          await hootis.totalSupply()
-                      )
+                      const totalSupply = parseInt(await hootis.totalSupply())
 
                       if (totalSupply + mintNumber > max_supply) {
                           await expect(
@@ -122,48 +120,46 @@ require('dotenv').config()
                   })
               })
 
-                it('max supply', async () => {
-                    await hootis.setSaleStage(1)
-                    const max_supply = await hootis.maxSupply()
-                    const mintNumber = 1
-                    for (let i = 0; i < whitelistAccounts.length; i++) {
-                        const allowlister = whitelistAccounts[i]
-                        const connected = await hootis.connect(allowlister)
-                        const signature = signatures[i]
-                        const totalSupply = parseInt(
-                            await hootis.totalSupply()
-                        )
+              it('max supply', async () => {
+                  await hootis.setSaleStage(1)
+                  const max_supply = await hootis.maxSupply()
+                  const mintNumber = 1
+                  for (let i = 0; i < whitelistAccounts.length; i++) {
+                      const allowlister = whitelistAccounts[i]
+                      const connected = await hootis.connect(allowlister)
+                      const signature = signatures[i]
+                      const totalSupply = parseInt(await hootis.totalSupply())
 
-                        if (totalSupply + mintNumber > max_supply) {
-                            await expect(
-                                connected.mintAllowlist(mintNumber, signature)
-                            ).to.be.revertedWithCustomError(
-                                hootis,
-                                'Hootis__SoldOut'
-                            )
-                        } else {
-                            await connected.mintAllowlist(mintNumber, signature)
-                        }
-                    }
-                })
+                      if (totalSupply + mintNumber > max_supply) {
+                          await expect(
+                              connected.mintAllowlist(mintNumber, signature)
+                          ).to.be.revertedWithCustomError(
+                              hootis,
+                              'Hootis__SoldOut'
+                          )
+                      } else {
+                          await connected.mintAllowlist(mintNumber, signature)
+                      }
+                  }
+              })
 
-                it('max per wallet', async () => {
-                    await hootis.setSaleStage(1)
-                    const maxPerWallet = await hootis.maxPerAddress()
-                    const allowlister = whitelistAccounts[0]
-                    const connected = await hootis.connect(allowlister)
-                    const signature = signatures[0]
+              it('max per wallet', async () => {
+                  await hootis.setSaleStage(1)
+                  const maxPerWallet = await hootis.maxPerAddress()
+                  const allowlister = whitelistAccounts[0]
+                  const connected = await hootis.connect(allowlister)
+                  const signature = signatures[0]
 
-                    await expect(
-                        connected.mintAllowlist(
-                            parseInt(maxPerWallet) + 1,
-                            signature
-                        )
-                    ).to.be.revertedWithCustomError(
-                        hootis,
-                        'Hootis__OutOfMaxPerWallet'
-                    )
-                })
+                  await expect(
+                      connected.mintAllowlist(
+                          parseInt(maxPerWallet) + 1,
+                          signature
+                      )
+                  ).to.be.revertedWithCustomError(
+                      hootis,
+                      'Hootis__OutOfMaxPerWallet'
+                  )
+              })
 
               it('valid signer', async () => {
                   await hootis.setSaleStage(1)
