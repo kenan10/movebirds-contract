@@ -15,6 +15,7 @@ error Hootis__InvalidSigner();
 error Hootis__WaitlistMintStopped();
 error Hootis__IncorrectValue();
 error Hootis__StageNotStartedYet(uint256 stage);
+error Hootis__InvalidNewSupply();
 
 contract Hootis is ERC721A, Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
@@ -27,7 +28,7 @@ contract Hootis is ERC721A, Ownable, ReentrancyGuard {
         SoldOut // 4
     }
 
-    uint256 public maxSupply = 10;
+    uint256 public maxSupply = 5000;
     uint256 public maxPerAddress = 2;
     uint256 public tokenPrice = 0.005 ether;
 
@@ -54,14 +55,28 @@ contract Hootis is ERC721A, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(string memory defaultBaseUri)
-        ERC721A('Hootis', 'HOOTIS')
-    {
+    constructor(string memory defaultBaseUri) ERC721A('The Hootis', 'HOOTIS') {
         baseTokenUri = defaultBaseUri;
     }
 
     function _baseURI() internal view override returns (string memory) {
         return baseTokenUri;
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+        string memory baseURI = _baseURI();
+        return
+            bytes(baseURI).length != 0
+                ? string(abi.encodePacked(baseURI, _toString(tokenId), '.json'))
+                : '';
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -76,17 +91,6 @@ contract Hootis is ERC721A, Ownable, ReentrancyGuard {
 
     function _startTokenId() internal pure override returns (uint256) {
         return 1;
-    }
-
-    function mintPublic(uint256 quantity)
-        external
-        payable
-        mintCompliance(quantity)
-    {
-        if (SaleStage.Public != saleStage) {
-            revert Hootis__StageNotStartedYet(uint256(saleStage));
-        }
-        internalMint(quantity);
     }
 
     function mintAllowlist(uint256 quantity, bytes memory signature)
@@ -175,8 +179,15 @@ contract Hootis is ERC721A, Ownable, ReentrancyGuard {
         return _numberMinted(claimer);
     }
 
-    function setMaxSupply(uint256 newMaxSupply) external onlyOwner {
-        maxSupply = newMaxSupply;
+    function setBaseUri(string memory _baseUri) external onlyOwner {
+        baseTokenUri = _baseUri;
+    }
+
+    function cutSupply(uint256 _maxSupply) external onlyOwner {
+        if (_maxSupply >= maxSupply) {
+            revert Hootis__InvalidNewSupply();
+        }
+        maxSupply = _maxSupply;
     }
 
     function setPrice(uint256 newPrice) external onlyOwner {
